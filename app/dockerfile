@@ -1,0 +1,17 @@
+FROM golang:1.21.6 as builder
+
+WORKDIR  /build/
+COPY . .
+
+RUN go mod tidy
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o ./app ./main.go
+
+
+# final stage
+FROM scratch AS final
+
+# copy everyting over the empty image
+COPY --chown=1024:1024 --from=builder /build/app /
+
+# start the app
+CMD [ "/app" ]
